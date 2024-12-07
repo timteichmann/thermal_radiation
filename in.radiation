@@ -8,6 +8,11 @@ variable            e2 equal "0.9"
 # Simulation setup
 variable            ns equal "1e20"
 variable            Ts equal "300"
+variable            ne equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26)"
+
+# Fluxes
+variable            n1 equal "v_e1 * v_ns"
+variable            n2 equal "v_e2 * v_ns"
 
 seed                12345
 dimension           2
@@ -46,8 +51,8 @@ surf_modify         P1 collide all react T1
 
 species             photon.species T1 T2
 
-mixture             T1 T1 nrho ${ns} temp ${Ts}
-mixture             T2 T2 nrho ${ns} temp ${Ts}
+mixture             T1 T1 nrho ${n1} temp ${Ts}
+mixture             T2 T2 nrho ${n2} temp ${Ts}
 
 fix                 P3L emit/surf T2 P3L
 fix                 P3R emit/surf T2 P3R
@@ -70,72 +75,37 @@ reset_timestep      0
 compute             N_P3L_ surf P3L species nflux norm flow
 fix                 N_P3L_ ave/surf P3L 1 1000 1000 c_N_P3L_[*] ave running
 compute             N_P3L reduce sum f_N_P3L_[*]
-compute             n_P3L_ surf P3L species nflux norm flux
-fix                 n_P3L_ ave/surf P3L 1 1000 1000 c_n_P3L_[*] ave running
-compute             n_P3L reduce sum f_n_P3L_[*]
-variable            A_P3L equal "(c_N_P3L[1] + c_N_P3L[2])/(c_n_P3L[1] + c_n_P3L[2] + 1e-20) + 1e-20"
-variable            Ne_P3L equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P3L"
-variable            Q_P3L equal "v_s * v_e1 * v_A_P3L * (c_N_P3L[1]*v_T1^4 + c_N_P3L[2]*v_T2^4)/v_Ne_P3L"
+variable            Q_P3L equal "v_s * (c_N_P3L[1]*v_T1^4 + c_N_P3L[2]*v_T2^4)/v_ne"
 
 compute             N_P3R_ surf P3R species nflux norm flow
 fix                 N_P3R_ ave/surf P3R 1 1000 1000 c_N_P3R_[*] ave running
 compute             N_P3R reduce sum f_N_P3R_[*]
-compute             n_P3R_ surf P3R species nflux norm flux
-fix                 n_P3R_ ave/surf P3R 1 1000 1000 c_n_P3R_[*] ave running
-compute             n_P3R reduce sum f_n_P3R_[*]
-variable            A_P3R equal "(c_N_P3R[1] + c_N_P3R[2])/(c_n_P3R[1] + c_n_P3R[2] + 1e-20) + 1e-20"
-variable            Ne_P3R equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P3R"
-variable            Q_P3R equal "v_s * v_e1 * v_A_P3R * (c_N_P3R[1]*v_T1^4 + c_N_P3R[2]*v_T2^4)/v_Ne_P3R"
+variable            Q_P3R equal "v_s * (c_N_P3R[1]*v_T1^4 + c_N_P3R[2]*v_T2^4)/v_ne"
 
 compute             N_P4L_ surf P4L species nflux norm flow
 fix                 N_P4L_ ave/surf P4L 1 1000 1000 c_N_P4L_[*] ave running
 compute             N_P4L reduce sum f_N_P4L_[*]
-compute             n_P4L_ surf P4L species nflux norm flux
-fix                 n_P4L_ ave/surf P4L 1 1000 1000 c_n_P4L_[*] ave running
-compute             n_P4L reduce sum f_n_P4L_[*]
-variable            A_P4L equal "(c_N_P4L[1] + c_N_P4L[2])/(c_n_P4L[1] + c_n_P4L[2] + 1e-20) + 1e-20"
-variable            Ne_P4L equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P4L"
-variable            Q_P4L equal "v_s * v_e1 * v_A_P4L * (c_N_P4L[1]*v_T1^4 + c_N_P4L[2]*v_T2^4)/v_Ne_P4L"
+variable            Q_P4L equal "v_s * (c_N_P4L[1]*v_T1^4 + c_N_P4L[2]*v_T2^4)/v_ne"
 
 compute             N_P4R_ surf P4R species nflux norm flow
 fix                 N_P4R_ ave/surf P4R 1 1000 1000 c_N_P4R_[*] ave running
 compute             N_P4R reduce sum f_N_P4R_[*]
-compute             n_P4R_ surf P4R species nflux norm flux
-fix                 n_P4R_ ave/surf P4R 1 1000 1000 c_n_P4R_[*] ave running
-compute             n_P4R reduce sum f_n_P4R_[*]
-variable            A_P4R equal "(c_N_P4R[1] + c_N_P4R[2])/(c_n_P4R[1] + c_n_P4R[2] + 1e-20) + 1e-20"
-variable            Ne_P4R equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P4R"
-variable            Q_P4R equal "v_s * v_e1 * v_A_P4R * (c_N_P4R[1]*v_T1^4 + c_N_P4R[2]*v_T2^4)/v_Ne_P4R"
+variable            Q_P4R equal "v_s * (c_N_P4R[1]*v_T1^4 + c_N_P4R[2]*v_T2^4)/v_ne"
 
 compute             N_P2_ surf P2 species nflux norm flow
 fix                 N_P2_ ave/surf P2 1 1000 1000 c_N_P2_[*] ave running
 compute             N_P2 reduce sum f_N_P2_[*]
-compute             n_P2_ surf P2 species nflux norm flux
-fix                 n_P2_ ave/surf P2 1 1000 1000 c_n_P2_[*] ave running
-compute             n_P2 reduce sum f_n_P2_[*]
-variable            A_P2 equal "(c_N_P2[1] + c_N_P2[2])/(c_n_P2[1] + c_n_P2[2] + 1e-20) + 1e-20"
-variable            Ne_P2 equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P2"
-variable            Q_P2 equal "v_s * v_e1 * v_A_P2 * (c_N_P2[1]*v_T1^4 + c_N_P2[2]*v_T2^4)/v_Ne_P2"
+variable            Q_P2 equal "v_s * (c_N_P2[1]*v_T1^4 + c_N_P2[2]*v_T2^4)/v_ne"
 
 compute             N_R1_ surf R1 species nflux norm flow
 fix                 N_R1_ ave/surf R1 1 1000 1000 c_N_R1_[*] ave running
 compute             N_R1 reduce sum f_N_R1_[*]
-compute             n_R1_ surf R1 species nflux norm flux
-fix                 n_R1_ ave/surf R1 1 1000 1000 c_n_R1_[*] ave running
-compute             n_R1 reduce sum f_n_R1_[*]
-variable            A_R1 equal "(c_N_R1[1] + c_N_R1[2])/(c_n_R1[1] + c_n_R1[2] + 1e-20) + 1e-20"
-variable            Ne_R1 equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_R1"
-variable            Q_R1 equal "v_s * v_e1 * v_A_R1 * (c_N_R1[1]*v_T1^4 + c_N_R1[2]*v_T2^4)/v_Ne_R1"
+variable            Q_R1 equal "v_s * (c_N_R1[1]*v_T1^4 + c_N_R1[2]*v_T2^4)/v_ne"
 
 compute             N_P1_ surf P1 species nflux norm flow
 fix                 N_P1_ ave/surf P1 1 1000 1000 c_N_P1_[*] ave running
 compute             N_P1 reduce sum f_N_P1_[*]
-compute             n_P1_ surf P1 species nflux norm flux
-fix                 n_P1_ ave/surf P1 1 1000 1000 c_n_P1_[*] ave running
-compute             n_P1 reduce sum f_n_P1_[*]
-variable            A_P1 equal "(c_N_P1[1] + c_N_P1[2])/(c_n_P1[1] + c_n_P1[2] + 1e-20) + 1e-20"
-variable            Ne_P1 equal "1/4 * v_ns * sqrt(8*v_kB*v_Ts/PI/1e-26) * v_A_P1"
-variable            Q_P1 equal "v_s * v_e1 * v_A_P1 * (c_N_P1[1]*v_T1^4 + c_N_P1[2]*v_T2^4)/v_Ne_P1"
+variable            Q_P1 equal "v_s * (c_N_P1[1]*v_T1^4 + c_N_P1[2]*v_T2^4)/v_ne"
 
 stats               1000
 stats_style         step np v_Q_P1 v_Q_P2 v_Q_P3R v_Q_P3L v_Q_P4R v_Q_P4L v_Q_R1
