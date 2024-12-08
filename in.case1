@@ -1,0 +1,142 @@
+# Simulation setup:
+variable            ns equal "1e20"
+variable            Ts equal "300"
+variable            ne equal "1/4 * v_ns * sqrt(8*1.380649e-23*v_Ts/PI/1e-26)"
+
+# Variables:
+variable            T1 equal "300"
+variable            T2 equal "4.5"
+
+variable            e_P1 equal "0.9"
+variable            n_P1 equal "v_e_P1 * v_ns"
+
+variable            e_P2 equal "0.9"
+variable            n_P2 equal "v_e_P2 * v_ns"
+
+variable            e_P3R equal "0.9"
+variable            n_P3R equal "v_e_P3R * v_ns"
+
+variable            e_P3L equal "0.9"
+variable            n_P3L equal "v_e_P3L * v_ns"
+
+variable            e_P4R equal "0.9"
+variable            n_P4R equal "v_e_P4R * v_ns"
+
+variable            e_P4L equal "0.9"
+variable            n_P4L equal "v_e_P4L * v_ns"
+
+variable            e_P34T equal "0.0"
+variable            n_P34T equal "v_e_P34T * v_ns"
+
+variable            e_R1 equal "0.9"
+variable            n_R1 equal "v_e_R1 * v_ns"
+
+# Geometry:
+seed                12345
+dimension           2
+global              gridcut 0.0 comm/sort yes
+
+boundary            oo ao pp
+create_box          -0.892 0.892 0.0 0.773 -0.5 0.5
+create_grid         10 5 1
+
+# Surfaces:
+read_surf           geometry.surf
+group               P1 surf id 9
+group               P2 surf id 7
+group               P3R surf id 3
+group               P3L surf id 1
+group               P4R surf id 6
+group               P4L surf id 4
+group               P34T surf id 2 5
+group               R1 surf id 8
+
+surf_collide        all adiabatic
+surf_react          P1 global ${e_P1} 0.0
+surf_modify         P1 collide all react P1
+surf_react          P2 global ${e_P2} 0.0
+surf_modify         P2 collide all react P2
+surf_react          P3R global ${e_P3R} 0.0
+surf_modify         P3R collide all react P3R
+surf_react          P3L global ${e_P3L} 0.0
+surf_modify         P3L collide all react P3L
+surf_react          P4R global ${e_P4R} 0.0
+surf_modify         P4R collide all react P4R
+surf_react          P4L global ${e_P4L} 0.0
+surf_modify         P4L collide all react P4L
+surf_react          P34T global ${e_P34T} 0.0
+surf_modify         P34T collide all react P34T
+surf_react          R1 global ${e_R1} 0.0
+surf_modify         R1 collide all react R1
+
+# Emits:
+species             photon.species T1 T2
+
+mixture             P1 T1 nrho ${n_P1} temp ${T1}
+fix                 P1 emit/surf P1 P1
+mixture             P2 T1 nrho ${n_P2} temp ${T1}
+fix                 P2 emit/surf P2 P2
+mixture             P3R T2 nrho ${n_P3R} temp ${T2}
+fix                 P3R emit/surf P3R P3R
+mixture             P3L T2 nrho ${n_P3L} temp ${T2}
+fix                 P3L emit/surf P3L P3L
+mixture             P4R T2 nrho ${n_P4R} temp ${T2}
+fix                 P4R emit/surf P4R P4R
+mixture             P4L T2 nrho ${n_P4L} temp ${T2}
+fix                 P4L emit/surf P4L P4L
+mixture             R1 T1 nrho ${n_R1} temp ${T1}
+fix                 R1 emit/surf R1 R1
+
+# Steady-state run:
+global              fnum 1e+16
+timestep            0.01
+stats               1
+run                 100
+reset_timestep      0
+
+# Computes:
+variable            SB equal "5.670374419e-08"
+
+compute             N_P1_ surf P1 species nflux norm flow
+fix                 N_P1_ ave/surf P1 1 1 1 c_N_P1_[*] ave running
+compute             N_P1 reduce sum f_N_P1_[*]
+variable            Q_P1 equal "v_SB * (c_N_P1[1]*v_T1^4 + c_N_P1[2]*v_T2^4)/v_ne"
+
+compute             N_P2_ surf P2 species nflux norm flow
+fix                 N_P2_ ave/surf P2 1 1 1 c_N_P2_[*] ave running
+compute             N_P2 reduce sum f_N_P2_[*]
+variable            Q_P2 equal "v_SB * (c_N_P2[1]*v_T1^4 + c_N_P2[2]*v_T2^4)/v_ne"
+
+compute             N_P3R_ surf P3R species nflux norm flow
+fix                 N_P3R_ ave/surf P3R 1 1 1 c_N_P3R_[*] ave running
+compute             N_P3R reduce sum f_N_P3R_[*]
+variable            Q_P3R equal "v_SB * (c_N_P3R[1]*v_T1^4 + c_N_P3R[2]*v_T2^4)/v_ne"
+
+compute             N_P3L_ surf P3L species nflux norm flow
+fix                 N_P3L_ ave/surf P3L 1 1 1 c_N_P3L_[*] ave running
+compute             N_P3L reduce sum f_N_P3L_[*]
+variable            Q_P3L equal "v_SB * (c_N_P3L[1]*v_T1^4 + c_N_P3L[2]*v_T2^4)/v_ne"
+
+compute             N_P4R_ surf P4R species nflux norm flow
+fix                 N_P4R_ ave/surf P4R 1 1 1 c_N_P4R_[*] ave running
+compute             N_P4R reduce sum f_N_P4R_[*]
+variable            Q_P4R equal "v_SB * (c_N_P4R[1]*v_T1^4 + c_N_P4R[2]*v_T2^4)/v_ne"
+
+compute             N_P4L_ surf P4L species nflux norm flow
+fix                 N_P4L_ ave/surf P4L 1 1 1 c_N_P4L_[*] ave running
+compute             N_P4L reduce sum f_N_P4L_[*]
+variable            Q_P4L equal "v_SB * (c_N_P4L[1]*v_T1^4 + c_N_P4L[2]*v_T2^4)/v_ne"
+
+compute             N_P34T_ surf P34T species nflux norm flow
+fix                 N_P34T_ ave/surf P34T 1 1 1 c_N_P34T_[*] ave running
+compute             N_P34T reduce sum f_N_P34T_[*]
+variable            Q_P34T equal "v_SB * (c_N_P34T[1]*v_T1^4 + c_N_P34T[2]*v_T2^4)/v_ne"
+
+compute             N_R1_ surf R1 species nflux norm flow
+fix                 N_R1_ ave/surf R1 1 1 1 c_N_R1_[*] ave running
+compute             N_R1 reduce sum f_N_R1_[*]
+variable            Q_R1 equal "v_SB * (c_N_R1[1]*v_T1^4 + c_N_R1[2]*v_T2^4)/v_ne"
+
+# Averaging run:
+stats_style         step np v_Q_P1 v_Q_P2 v_Q_P3R v_Q_P3L v_Q_P4R v_Q_P4L v_Q_P34T v_Q_R1
+run                 1000
