@@ -129,7 +129,7 @@ class Setup:
             nl("# Geometry:")
             nl("seed                12345") # reproducible for now
             nl("dimension           2")
-            nl("global              gridcut 0.0 comm/sort yes")
+            nl("global              gridcut 0.0 comm/sort yes surfmax 10000 splitmax 1000")
             nl("")
             if self.axisymmetric:
                 nl("boundary            oo ao pp")
