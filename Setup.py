@@ -136,13 +136,7 @@ class Setup:
             else:
                 nl("boundary            oo oo pp")
             nl("create_box          " + str(xmin) + " " + str(xmax) + " " + str(ymin) + " " + str(ymax) + " -0.5 0.5")
-            dx = xmax - xmin
-            dy = ymax - ymin
-            nm = 10
-            if dx > dy:
-                nl("create_grid         " + str(nm) + " " + str(int(dy/dx * nm) + 1) + " 1")
-            else:
-                nl("create_grid         " + str(int(dx/dy * nm) + 1) + " " + str(nm) + " 1")
+            nl("create_grid         1 1 1")
             nl("")
             nl("# Surfaces:")
             nl("read_surf           " + str(surf_file))
