@@ -80,6 +80,8 @@ class Setup:
             xmin = min(xmin, x1, x2)
             xmax = max(xmax, x1, x2)
             ymin = min(ymin, y1, y2)
+            if self.axisymmetric:
+                ymin = 0.0
             ymax = max(ymax, y1, y2)
 
         with open(surf_file, "w") as f:
