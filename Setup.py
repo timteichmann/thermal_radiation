@@ -69,7 +69,7 @@ class Setup:
         plt.gca().set_aspect("equal")
         plt.show()
 
-    def setup_case(self, input_file, surf_file, species_file, fnum, dt, n_steady, n_ave):
+    def setup_case(self, input_file, surf_file, species_file, fnum, dt, n_steady, n_ave, n_grid=100):
         # bounding box
         xmin = ymin = np.inf
         xmax = ymax = -np.inf
@@ -131,14 +131,19 @@ class Setup:
             nl("# Geometry:")
             nl("seed                12345") # reproducible for now
             nl("dimension           2")
-            nl("global              gridcut 0.0 comm/sort yes surfmax 10000 splitmax 1000")
+            nl("global              gridcut 0.0 comm/sort yes")
             nl("")
             if self.axisymmetric:
                 nl("boundary            oo ao pp")
             else:
                 nl("boundary            oo oo pp")
             nl("create_box          " + str(xmin) + " " + str(xmax) + " " + str(ymin) + " " + str(ymax) + " -0.5 0.5")
-            nl("create_grid         1 1 1")
+            dx = xmax - xmin
+            dy = ymax - ymin
+            if dx > dy:
+                nl("create_grid         " + str(n_grid) + " " + str(int(dy/dx * n_grid) + 1) + " 1")
+            else:
+                nl("create_grid         " + str(int(dx/dy * n_grid) + 1) + " " + str(n_grid) + " 1")
             nl("")
             nl("# Surfaces:")
             nl("read_surf           " + str(surf_file))
