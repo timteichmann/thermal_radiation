@@ -184,6 +184,8 @@ class Setup:
             nl("")
             nl("# Computes:")
             nl("variable            SB equal \"" + str(5.670374419e-8) + "\"")
+            nl("")
+            nl("# Note: the last term in the variable commands compensates for the inclusion of time step 0 with 0 counters in the averaging")
             for group in self.groups:
                 nl("")
                 nl("compute             N_" + str(group) + "_ surf " + str(group) + " species nflux norm flow")
@@ -195,7 +197,7 @@ class Setup:
                         sum_term += " + "
                     sum_term += "c_N_" + str(group) + "[" + str(specie + 1) + "]*v_T" + str(specie + 1) + "^4"
 
-                nl("variable            Q_" + str(group) + " equal \"v_SB * (" + sum_term + ")/v_ne\"")
+                nl("variable            Q_" + str(group) + " equal \"v_SB * (" + sum_term + ")/v_ne * (step + 1)/(step + 1e-20)\"")
 
             nl("")
             nl("# Averaging run:")
